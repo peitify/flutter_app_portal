@@ -1,0 +1,61 @@
+
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+//apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    compileSdkVersion 31
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.example.flutter_app_portal"
+        minSdkVersion 21
+        targetSdkVersion 31
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+        }
+        profile {}
+        debug {}
+    }
+}
+
+//flutter {
+//    source '../..'
+//}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    api project(':Flutter')
+    debugCompileOnly ("io.flutter:flutter_embedding_debug:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+        transitive = false
+    }
+    releaseCompileOnly ("io.flutter:flutter_embedding_release:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+        transitive = false
+    }
+    profileCompileOnly ("io.flutter:flutter_embedding_profile:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+        transitive = false
+    }
+}

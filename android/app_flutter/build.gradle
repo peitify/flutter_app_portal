@@ -1,0 +1,118 @@
+
+def localProperties = new Properties()
+def localPropertiesFile = new File(buildscript.sourceFile.parentFile.parentFile, 'local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+println("flutterRoot == " + flutterRoot)
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.kezong.fat-aar'
+//apply from: "flutter.gradle"
+
+apply plugin: 'pack-flutter'
+
+group 'com.example.flutter_app_module'
+version '1.0'
+
+android {
+    compileSdkVersion 32
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 32
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+
+        }
+        debug {
+        }
+        profile {}
+    }
+}
+
+//configurations.each { configuration ->
+//    println(">>> configuration.name: " + configuration.name)
+////    if (configuration.name.contains("Embed")) {
+////        configuration.resolve()
+////    }
+//    configuration.resolve()
+//}
+//
+//configurations {
+//    debugEmbed
+//}
+
+configurations.each { conf ->
+    println(">>> configuration.name: " + conf.name)
+    conf.incoming.beforeResolve {
+        String err = "beforeResolve Configuration '${conf.name}' of project ${rootProject.name}${project.path} is being resolved."
+//        try {
+//            throw new RuntimeException()
+//        } catch ( Exception e ) {
+//            logger.warn( err, e )
+//        }
+        println(err)
+    }
+//    if (conf.name.toLowerCase().contains("embed")) {
+//        println("conf.name.toLowerCase().contains(\"embed\")")
+//        conf.resolve()
+//    }
+    conf.incoming.afterResolve {
+        String err = "afterResolve Configuration '${conf.name}' of project ${rootProject.name}${project.path} is being resolved."
+//        try {
+//            throw new RuntimeException()
+//        } catch ( Exception e ) {
+//            logger.warn( err, e )
+//        }
+        println(err)
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.2.0'
+//    debugCompileOnly ("io.flutter:flutter_embedding_debug:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+//        transitive = false
+//    }
+//    profileCompileOnly ("io.flutter:flutter_embedding_profile:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+//        transitive = false
+//    }
+//    releaseCompileOnly ("io.flutter:flutter_embedding_release:1.0.0-57d3bac3dd5cb5b0e464ab70e7bc8a0d8cf083ab") {
+//        transitive = false
+//    }
+}
+
+

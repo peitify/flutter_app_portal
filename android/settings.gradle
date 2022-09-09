@@ -1,0 +1,45 @@
+
+
+include ':app'
+
+println('>>> settingsDir: ' + settingsDir)
+
+include ':Flutter'
+project(":Flutter").projectDir = new File(settingsDir, "app_flutter")
+
+//setBinding(new Binding([gradle: this]))
+//evaluate(new File(settingsDir, 'include_flutter.groovy'))
+
+//apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+import groovy.json.JsonSlurper
+
+// Note: if this logic is changed, also change the logic in module_plugin_loader.gradle.
+def pluginsFile = new File(settingsDir.parentFile, '.flutter-plugins-dependencies')
+if (!pluginsFile.exists()) {
+    return
+}
+def object = new JsonSlurper().parseText(pluginsFile.text)
+assert object instanceof Map
+assert object.plugins instanceof Map
+assert object.plugins.android instanceof List
+// Includes the Flutter plugins that support the Android platform.
+object.plugins.android.each { androidPlugin ->
+    assert androidPlugin.name instanceof String
+    assert androidPlugin.path instanceof String
+    def pluginDirectory = new File(androidPlugin.path, 'android')
+    assert pluginDirectory.exists()
+    include ":${androidPlugin.name}"
+    project(":${androidPlugin.name}").projectDir = pluginDirectory
+}
+
+gradle.getGradle().projectsLoaded { g ->
+    g.rootProject.afterEvaluate { p ->
+        p.subprojects { sp ->
+            println("s sp.name: " + sp.name)
+            if (sp.name != 'Flutter' || sp.name != 'app') {
+                sp.evaluationDependsOn(':Flutter')
+            }
+            println("e sp.name : " + sp.name)
+        }
+    }
+}
