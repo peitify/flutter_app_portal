@@ -85,6 +85,7 @@ class FlutterPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        project.pluginManager.apply('com.kezong.fat-aar')
         this.project = project
 
         def rootProject = project.rootProject
@@ -272,9 +273,9 @@ class FlutterPlugin implements Plugin<Project> {
         // type like profile is used, and the plugin and app projects have API dependencies on the
         // embedding.
         if (!isFlutterAppProject() || getPluginList().size() == 0) {
-            addEmbedDependencies(project, buildType.name,
+            addApiDependencies(project, buildType.name,
                     "io.flutter:flutter_embedding_$flutterBuildMode:$engineVersion")
-            println(" >>> === ${buildType.name}Embed ===")
+            println(" >>> === ${buildType.name} Embed: io.flutter:flutter_embedding_$flutterBuildMode:$engineVersion ===")
         }
         List<String> platforms = getTargetPlatforms().collect()
         // Debug mode includes x86 and x64, which are commonly used in emulators.
@@ -285,8 +286,10 @@ class FlutterPlugin implements Plugin<Project> {
         platforms.each { platform ->
             String arch = PLATFORM_ARCH_MAP[platform].replace("-", "_")
             // Add the `libflutter.so` dependency.
-            addEmbedDependencies(project, buildType.name,
+            addApiDependencies(project, buildType.name,
                     "io.flutter:${arch}_$flutterBuildMode:$engineVersion")
+            println(" >>> === ${buildType.name} Embed 2: io.flutter:${arch}_$flutterBuildMode:$engineVersion ===")
+
         }
     }
 
@@ -323,7 +326,7 @@ class FlutterPlugin implements Plugin<Project> {
         }
         // Add plugin dependency to the app project.
         project.dependencies {
-            api pluginProject
+            embed pluginProject
         }
         Closure addEmbeddingDependencyToPlugin = { buildType ->
             String flutterBuildMode = buildModeFor(buildType)
@@ -822,25 +825,28 @@ class FlutterPlugin implements Plugin<Project> {
                 }
             }
             File libJar = project.file("${project.buildDir}/${AndroidProject.FD_INTERMEDIATES}/flutter/${variant.name}/libs.jar")
-            Task packFlutterAppAotTask = project.tasks.create(name: "packLibs${FLUTTER_BUILD_PREFIX}${variant.name.capitalize()}", type: Jar) {
-                destinationDir libJar.parentFile
-                archiveName libJar.name
-                dependsOn compileTask
-                println(">>> packFlutterAppAotTask === ${compileTask.intermediateDir}")
-                targetPlatforms.each { targetPlatform ->
-                    String abi = PLATFORM_ARCH_MAP[targetPlatform]
-                    from("${compileTask.intermediateDir}/${abi}") {
-                        include "*.so"
-                        // Move `app.so` to `lib/<abi>/libapp.so`
-                        rename { String filename ->
-                            return "lib/${abi}/lib${filename}"
-                        }
-                    }
-                }
-            }
-            addApiDependencies(project, variant.name, project.files {
-                packFlutterAppAotTask
-            })
+//            if (variantBuildMode == 'profile' || variantBuildMode == 'release') {
+//                Task packFlutterAppAotTask = project.tasks.create(name: "packLibs${FLUTTER_BUILD_PREFIX}${variant.name.capitalize()}", type: Jar) {
+//                    destinationDirectory.set(libJar.parentFile)
+//                    archiveFileName.set(libJar.name)
+//                    dependsOn compileTask
+//                    println(">>> packFlutterAppAotTask === ${compileTask.intermediateDir}")
+//                    targetPlatforms.each { targetPlatform ->
+//                        String abi = PLATFORM_ARCH_MAP[targetPlatform]
+//                        from("${compileTask.intermediateDir}/${abi}") {
+//                            include "*.so"
+//                            // Move `app.so` to `lib/<abi>/libapp.so`
+//                            rename { String filename ->
+//                                return "lib/${abi}/lib${filename}"
+//                            }
+//                        }
+//                    }
+//                }
+//                addApiDependencies(project, variant.name, project.files {
+//                    packFlutterAppAotTask
+//                })
+//            }
+
             // We build an AAR when this property is defined.
             boolean isBuildingAar = project.hasProperty('is-plugin')
             // In add to app scenarios, a Gradle project contains a `:flutter` and `:app` project.

@@ -25,8 +25,9 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.kezong.fat-aar'
+//apply plugin: 'com.kezong.fat-aar'
 //apply from: "flutter.gradle"
+apply plugin: 'maven-publish'
 
 apply plugin: 'pack-flutter'
 
